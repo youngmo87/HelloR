@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1551687234503.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "898509138",
+    "id" : "81C53D4D",
+    "lastKnownWriteTime" : 1551687263,
+    "last_content_update" : 1551687263981,
+    "path" : "C:/workspace/r/hellor/20190304_2번.R",
+    "project_path" : "20190304_2번.R",
+    "properties" : {
+        "cursorPosition" : "0,17",
+        "scrollLine" : "0",
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
