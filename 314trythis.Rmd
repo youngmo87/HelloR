@@ -37,7 +37,7 @@ trythis1 = ggplot()+
 trythis1
 ```
 
-##3월 14일 Trythis2!!!
+## 3월 14일 Trythis2!!!
 ```{r pressure, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
 load('data/data_trythis2.rda')
 
@@ -51,8 +51,8 @@ ylab("학생수")+
 labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
 
 ```
-
-##3월 14일 Trythis3!!!
+----
+## 3월 14일 Trythis3!!!
 ```{r trythis3, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
 load('data/data_trythis3.rda')
 
@@ -63,7 +63,8 @@ trythis3
 
 ```
 
-##3월 14일 Trythis4!!!
+
+## 3월 14일 Trythis4!!!
 ```{r}
 
 load('data/data_trythis4.rda')
