@@ -1,8 +1,10 @@
 ---
 title: "Rmarkdown"
 author: "Kim"
-date: "2019년 3월 14일"
-output: html_document
+date: "2019<eb>뀈 3<ec>썡 14<ec>씪"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -10,10 +12,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
+```{r practice}
+library(ggplot2)
+ggplot(dt2, aes(반)) +
+geom_bar(aes(fill=성별),
+         width = 0.5) +
+xlab("학급")+
+ylab("학생수")+
+labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
+```
+Trythis2 실험용!!!
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
 head(cars)
