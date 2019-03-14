@@ -1,19 +1,23 @@
 ---
 title: "Rmarkdown"
 author: "Kim"
-date: "2019<eb>뀈 3<ec>썡 14<ec>씪"
+date: "2019"
 output:
-  pdf_document: default
   html_document: default
+    
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## R Markdown
-```{r practice}
+```{r practice, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+load('data/data_trythis3.rda')
 library(ggplot2)
+library(dplyr)
+dt2 = data %>% filter(국어 >= 80) %>% select(반,성별)
 ggplot(dt2, aes(반)) +
 geom_bar(aes(fill=성별),
          width = 0.5) +
@@ -21,7 +25,7 @@ xlab("학급")+
 ylab("학생수")+
 labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
 ```
-Trythis2 실험용!!!
+Trythis2
 
 
 ```{r cars}

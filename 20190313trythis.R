@@ -3,8 +3,6 @@ install.packages('dplyr')
 library('dplyr')
 install.packages('ggplot2')
 library('ggplot2')
-install.packages('rmarkdown')
-library('rmarkdown')
 
 # thythis1 #####
 mpg = rename(mpg, manu=manufacturer)
@@ -29,38 +27,56 @@ scale_y_continuous("연비", limits = c(5, 45)) +
 labs(title = '연도별 통합 연비', subtitle = '굵은 선은 2008년') 
 trythis1
 
-#trythis2 ####
+save(trythis1, file='data/trythis1_eg.rda')
+
+
+#trythis2 #/###
 options(encoding='utf-8')
 data = read.csv('data/성적.csv')
 
 dt2 = data %>% filter(국어>= 80)%>%select(반, 성별) 
  
-ggplot(dt2, aes(반)) +
+trythis3 = ggplot(dt2, aes(반)) +
 geom_bar(aes(fill=성별),
          width = 0.5) +
 xlab("학급")+
 ylab("학생수")+
 labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
+save(data, file='data/data_trythis3.rda')
+
 
 # trythis3 #####
 dt3 = data %>% filter(국어>= 95)%>%select(반, 성별, 국어) 
-ggplot(dt3, aes(국어))+
+trythis3 = ggplot(dt3, aes(국어))+
   geom_density(aes(fill=factor(반)), alpha = 0.5)+
   labs(title = "반별 국어 우수학생", subtitle = "(국어성적 A+)", caption="Source:ggplot2::mpg", x ="성적",y="밀도", fill="학급")
 
+save(data, file='data/data_trythis3.rda')
+
 # trythis4 ####
+midwest = as.data.frame(ggplot2::midwest)
+
 View(midwest)
 
-dt4 = midwest %>% select(state, poptotal, popasian) 
+dt4 = midwest %>% select(county, state, poptotal, popasian) 
+
+dt41 = midwest %>% select(county, state, poptotal) 
+dt42 = midwest %>% select(county, state, popasian) 
+
+
 dt4 = midwest %>% group_by(state) %>% 
   summarise(m1 = sum(poptotal), m2 = sum(popasian))
-dt4=melt(dt4[,1:3], id.vars="state", variable.name = "index")
+dt4=melt(dt4[,1:4], id.vars="state", variable.name = "index")
+
+dcast(dt4, county~state, value.var="value")
+
+
 
 dt4
 str(dt4)
 
 ggplot(dt4, aes(x=state, y=value))+
-  geom_bar(stat='identity', aes(fill=index), width = 0.5) 
+  geom_(stat='identity', aes(fill=index), width = 0.5) 
   xlab("학급")+
   ylab("학생수")+
   labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")

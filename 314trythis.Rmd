@@ -1,0 +1,76 @@
+---
+title: "0314trythis"
+author: "Kim"
+date: "2019년 3월 14일"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##3월 14일 TryThis1!!!
+```{r try1, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+
+library(dplyr)
+library(ggplot2)
+mpg = as.data.frame(ggplot2::mpg)
+
+mpg = rename(mpg, manu=manufacturer)
+
+d2 = mpg %>% filter(year==2008) %>% group_by(displ, year) %>% 
+  summarise(m1 = mean(cty), m2 = mean(hwy))
+
+d3 = mpg %>% filter(year==1999) %>% group_by(displ, year) %>% 
+  summarise(m1 = mean(cty), m2 = mean(hwy))
+
+trythis1 = ggplot()+
+  geom_line(data=d2, aes(x=displ, y=m1, color = '2008cty'), size=2) +
+  geom_line(data=d2, aes(x=displ, y=m2, color = '2008hwy'), size=2) +
+  geom_line(data=d3, aes(x=displ, y=m1, color = '1999cty'))+
+  geom_line(data=d3, aes(x=displ, y=m2, color = '1999hwy'))+
+  
+  scale_colour_manual("", breaks = c("2008cty", "2008hwy", "1999cty", "1999hwy"), values = c("black", "green", "blue", "orange"))+
+  
+  xlab("배기량") +
+  xlim(1, 8) +
+  scale_y_continuous("연비", limits = c(5, 45)) +
+  labs(title = '연도별 통합 연비', subtitle = '굵은 선은 2008년') 
+trythis1
+
+```
+##3월 14일 Trythis2!!!
+```{r pressure, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+load('data/data_trythis2.rda')
+
+dt2 = data %>% filter(국어 >= 80) %>% select(반,성별)
+
+ggplot(dt2, aes(반)) +
+geom_bar(aes(fill=성별),
+         width = 0.5) +
+xlab("학급")+
+ylab("학생수")+
+labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
+
+```
+##3월 14일 Trythis3!!!
+```{r trythis3, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+load('data/data_trythis3.rda')
+
+trythis3 = ggplot(dt3, aes(국어))+
+  geom_density(aes(fill=factor(반)), alpha = 0.5)+
+  labs(title = "반별 국어 우수학생", subtitle = "(국어성적 A+)", caption="Source:Jade::성적", x ="성적",y="밀도", fill="학급")
+trythis3
+
+```
+##3월 14일 Trythis4!!!
+```{r}
+
+load('data/data_trythis4.rda')
+
+dt41 = midwest %>% filter(poptotal <= 500000) %>% select(county, state, poptotal) 
+dt42 = midwest %>% filter(popasian <= 10000) %>%select(county, state, popasian) 
+
+ggplot()+
+  geom_point(data=dt41, aes(x=state, y=poptotal,col = 'totalpop'), alpha=0.3, position = "jitter")+
+  geom_point(data=dt42, aes(x=state, y=popasian,col = 'asianpop'), alpha=0.6, position = "jitter")
+
+```
