@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## R Markdown
-```{r practice, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+```{r trythis1, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
 load('data/data_trythis3.rda')
 library(ggplot2)
 library(dplyr)
@@ -28,9 +28,20 @@ labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
 Trythis2
 
 
-```{r cars}
-head(cars)
-summary(cars)
+```{r trythis2, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+options(encoding='utf-8')
+data = read.csv('data/성적.csv')
+
+dt2 = data %>% filter(국어>= 80)%>%select(반, 성별) 
+
+trythis3 = ggplot(dt2, aes(반)) +
+  geom_bar(aes(fill=성별), width = 0.5) +
+  xlab("학급")+
+  ylab("학생수")+
+  labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
+trythis3
+
+
 ```
 
 ## Including Plots

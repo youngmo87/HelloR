@@ -25,7 +25,8 @@ xlab("배기량") +
 xlim(1, 8) +
 scale_y_continuous("연비", limits = c(5, 45)) +
 labs(title = '연도별 통합 연비', subtitle = '굵은 선은 2008년') 
-trythis1
+ggplotly(trythis1)
+
 
 save(trythis1, file='data/trythis1_eg.rda')
 
@@ -53,30 +54,33 @@ trythis3 = ggplot(dt3, aes(국어))+
 
 save(data, file='data/data_trythis3.rda')
 
+ggplotly(trythis2)
+
 # trythis4 ####
 midwest = as.data.frame(ggplot2::midwest)
 
-View(midwest)
 
 dt4 = midwest %>% select(county, state, poptotal, popasian) 
 
-dt41 = midwest %>% select(county, state, poptotal) 
-dt42 = midwest %>% select(county, state, popasian) 
+dt41 = midwest %>% filter(poptotal <= 500000) %>% select(county, state, poptotal) 
+dt42 = midwest %>% filter(popasian <= 10000) %>%select(county, state, popasian) 
 
-
-dt4 = midwest %>% group_by(state) %>% 
-  summarise(m1 = sum(poptotal), m2 = sum(popasian))
-dt4=melt(dt4[,1:4], id.vars="state", variable.name = "index")
+dt4 = midwest %>% filter(poptotal <= 500000 & popasian <= 10000) %>% group_by(state) %>% 
+  summarise(m1 =sum(poptotal), m2 = sum(popasian))
+dt4=melt(dt4[,1:3], id.vars="state", variable.name = "index")
 
 dcast(dt4, county~state, value.var="value")
+library(reshape2)
+library(ggplot2)
 
-
-
-dt4
+dt41
 str(dt4)
+ggplot()+
+  geom_point(data=dt41, aes(x=state, y=poptotal,col = 'totalpop'), alpha=0.3, position = "jitter")+
+  geom_point(data=dt42, aes(x=state, y=popasian,col = 'asianpop'), alpha=0.6, position = "jitter")
 
 ggplot(dt4, aes(x=state, y=value))+
-  geom_(stat='identity', aes(fill=index), width = 0.5) 
+  geom_histogram(stat='identity', aes(fill=index), width = 0.5) 
   xlab("학급")+
   ylab("학생수")+
   labs(title = "국어 우수 학생", subtitle =  "(80점 이상)")
