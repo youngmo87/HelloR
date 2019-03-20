@@ -96,3 +96,17 @@ ggplot(mpg, aes(cty)) +
 
 ```
 위의 그래프는 실린더 수에 따른 시내연비의 밀도를 나타낸 것이다. 색깔은 실린더 수를 나타내고 x축은 시내연비 y축은 데이터상에 그것의 밀도를 나타내어 주고 있다.  
+
+# 6. Violin plot
+```{r, violinplot,echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+
+
+ggplot(mpg, aes(class, cty)) +
+geom_violin() + 
+  labs(title="Violin plot", 
+       subtitle="City Mileage vs Class of vehicle",
+       caption="Source: mpg adapted from r-statistics.co by Selva Prabhakaran",
+       x="Class of Vehicle",
+       y="City Mileage")
+```
+
