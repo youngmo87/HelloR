@@ -1,0 +1,98 @@
+---
+title: "0419exam"
+author: "Kim"
+date: "2019년 4월 19일"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#### R에서의 시각화 packages중 대표적인 그래프 함수에 대해 용도와 작도법을 자유롭게 서술
+###### 여기서는 가장 대표적인 시각화 패키지인 ggplot2의 그래프 함수에 대해서 설명하겠다. 첫번째는 ggplot2 패키지를 설치하고 library를 탑재한다.
+```{r intro}
+#install.packages('ggplot2')
+library(ggplot2)
+```
+
+# 1. Scatterplot
+```{r scatterplot, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+options(scipen=999)  # 숫자 표기시 큰 숫자들이 제대로 표시될수 있게끔 해준다.
+library(ggplot2)
+
+midwest
+# Scatterplot
+ggplot(midwest, aes(x=area, y=poptotal)) + 
+  geom_point(aes(col=state, size=popdensity)) + 
+  geom_smooth(method="gam", se=TRUE) + 
+  xlim(c(0, 0.1)) + 
+  ylim(c(0, 500000)) + 
+  labs(subtitle="Area Vs Population", 
+       y="Population", 
+       x="Area", 
+       title="Scatterplot", 
+       caption = "Source: midwest adapted from r-statistics.co by Selva Prabhakaran")
+
+```
+위의 그래프는 y축은 인구 x축은 지역 점의 크기는 인구밀도, 점의 색깔은 주를 나타낸다. 위의 그래프를 통해서 주별 지역분포에 따른  총 인구수와 인구 밀도를 알 수 있다.  
+
+
+# 2. Barchart
+```{r geom_bar, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+load('data/mpg.rda')
+ggplot(mpg, aes(manu)) +
+  geom_bar(aes(fill=class),
+           width = 0.5) +
+  theme(axis.text.x = element_text(angle=45,vjust=0.6)) +  
+  scale_fill_discrete(name = "class") +
+  xlab('제조사')
+  labs(title = 'Title', subtitle = 'Sub Title') 
+
+```
+위의 그래프는 mpg 데이터를 이용하여, 제조사별 자동차의 클래스(세단, SUV, etc.)의 분포를 막대그래프로 표현한것이다. 
+angle이 포함된 코드는 x축 변수를 나태내어주는 글의 기울기를 변화시키는 것이고, vjust가 포함된 코드는 하단의 글씨를 어느정도 간격으로 띄울지를 정하는 것이다. 
+
+# 3. Linechart
+
+```{r geom_line, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+library(dplyr)
+d2 = mpg %>% group_by(manu, displ) %>% 
+	summarise(m1 = mean(cty), m2 = mean(hwy))
+ggplot(d2, aes(x=displ)) + 
+  geom_line(aes(y=m1, color='cty')) + 
+  geom_line(aes(y=m2, color='hwy'), size=1) +
+  scale_colour_manual("", breaks = c("cty", "hwy"),
+                          values = c("#d95f02", "#1b9e77")) +
+  xlab("배기량") +
+  xlim(1, 8) +
+  scale_y_continuous("연비", limits = c(5, 45)) +
+  labs(title = '배기량 연비') 
+
+```
+위의 그래프는 배기량에 따른 연비를 꺽은선 그래프로 표시한 것이다. 자료는 mpg 데이터를 이용했고 범례의 hwy는 고속도로 연비, cty는 시내연비이다. 여기서의 그래프의 원리는 ggplot 배경에 각 각의 geom_line 레이어를 더한 것이다. 레이어를 더해서 그래프를 출력한다느 원리를 이해하면 filter 와 select의 기능을 통해 효율적인 데이터의 시각화가 가능해진다. 
+
+# 4. Point plot
+```{r}
+load('data/grade.rda')
+ggplot(data, aes(반, kor)) +
+  	geom_point(aes(color=반, size=kor), 
+               alpha=0.3)
+
+
+
+
+```
+위의 그래프는 반별 국어성적의 분포를 나타낸 것으로 점의 크기는 국어과목 점수를 나타내고 색깔은 반을 나타내어 준다. 
+
+# 5. Density plot
+```{r geom_density, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+ggplot(mpg, aes(cty)) +
+  geom_density(aes(fill=factor(cyl)), alpha=0.8) +
+  labs(title="밀도그래프", subtitle = "실린더수에 따른 시내연비의 밀도그래프",
+       caption="Source: ggplot2::mpg",
+       x = "도시 연비",
+       fill = "실린더수")
+
+
+```
+위의 그래프는 실린더 수에 따른 시내연비의 밀도를 나타낸 것이다. 색깔은 실린더 수를 나타내고 x축은 시내연비 y축은 데이터상에 그것의 밀도를 나타내어 주고 있다.  
