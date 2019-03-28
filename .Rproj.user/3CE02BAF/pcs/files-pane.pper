@@ -1,6 +1,10 @@
 {
-    "path" : "C:/workspace/r/hellor",
+    "path" : "C:/workspace/r/hellor/data",
     "sortOrder" : [
+        {
+            "ascending" : false,
+            "columnIndex" : 4
+        },
         {
             "ascending" : true,
             "columnIndex" : 2
