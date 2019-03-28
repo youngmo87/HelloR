@@ -1,0 +1,10 @@
+api_key = "j2EMKCNXUUayDrrThfHbs62hg"
+api_secret = "8esTzXA5EeW6pqYVb1XdoFXfbJB2VW2zwMfw3GUjJlgjPXvLJT"
+token = "3494144413-773JkORhrmvXnXQlfIS4oGFJ5w8tszGLnHS1xPk" 
+token_secret = "nmsWrHStrt9isyShNCz7gPJ2WYA1ZUHmQqGTOZyOG1RCs"
+
+
+api_info = c(api_key, api_secret, token, token_secret)
+
+
+save(api_info, file="data/api_info.rda")

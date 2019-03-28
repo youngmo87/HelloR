@@ -1,0 +1,16 @@
+"0","options(encoding='utf-8')"
+"2","Warning message:
+"
+"2","In strsplit(code, ""\n"", fixed = TRUE) :"
+"2","
+ "
+"2"," input string 1 is invalid in this locale
+"
+"0","data = read.csv('data/성적.csv')"
+"0","dt2 = data %>% filter(국어>= 80)%>%select(반, 성별) "
+"0","trythis3 = ggplot(dt2, aes(반)) +"
+"0","  geom_bar(aes(fill=성별), width = 0.5) +"
+"0","  xlab(""학급"")+"
+"0","  ylab(""학생수"")+"
+"0","  labs(title = ""국어 우수 학생"", subtitle =  ""(80점 이상)"")"
+"0","trythis3"

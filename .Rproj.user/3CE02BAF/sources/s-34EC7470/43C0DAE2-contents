@@ -1,0 +1,158 @@
+Sys.setenv(JAVA_HOME="C:/Program Files/Java/jre1.8.0_191/")
+
+
+api_key = "j2EMKCNXUUayDrrThfHbs62hg"
+api_secret = "8esTzXA5EeW6pqYVb1XdoFXfbJB2VW2zwMfw3GUjJlgjPXvLJT"
+token = "3494144413-773JkORhrmvXnXQlfIS4oGFJ5w8tszGLnHS1xPk" 
+token_secret = "nmsWrHStrt9isyShNCz7gPJ2WYA1ZUHmQqGTOZyOG1RCs"
+
+
+install.packages(c("rJava", "memoise", "KoNLP"))
+
+setup_twitter_oauth(api_key, api_secret, token, token_secret)
+
+tweets = searchTwitter(enc2utf8('공무원'), n=200, lan='ko', since = '2019-03-11', until = '2019-03-31')
+
+tdf = twListToDF(tweets)
+guess_encoding(tdf)
+
+tdf = tdf %>% filter(!isRetweet) %>% filter(favoriteCount > 2)
+tdf = tdf %>% filter(regexpr('광고',text) == -1)    # 특정 단어 포함된 문서 제거
+tw = unique(tdf$text)    
+
+tw = gsub("[[:cntrl:]]", "", tw)                     
+tw = gsub("http[s]?://[[:alnum:].\\/]+", "", tw)   
+tw = gsub("&[[:alnum:]]+;", "", tw)            
+tw = gsub("@[[:alnum:]]+[:]?", "", tw)         
+tw = gsub("[ㄱ-ㅎㅏ-ㅣ]","",tw)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+tw = gsub("<.*>", "", enc2native(tw))          # EMO(/U00000f등) 제거 (windows)
+#tw = gsub('\\p{So}|\\p{Cn}', '', tw, perl = TRUE)    # EMO(/U00000f등) 제거 (mac)
+tw = gsub("\\s{2,}", " ", tw)                  # 2개이상 공백을 한개의 공백으로 처리
+tw = gsub("[[:punct:]]", "", tw)     
+
+# 1. 명사 추출
+nouns = sapply(tdf, extractNoun, USE.NAMES = F)
+wc = sapply(tw, extractNoun, USE.NAMES = F)
+wc1 = table(unlist(wc))
+names(wc1)
+length(wc1)
+
+wc2 = head(sort(wc1, decreasing = T), 100)
+wc2
+
+pal = brewer.pal(9, "Set1")
+
+wordcloud(names(wc2), freq=wc2, scale=c(5,0.5), rot.per=0.015, 
+          min.freq = 1, random.order = F, random.color = T, colors = pal)
+
+# 텍스트마이닝 기법 ####
+install.packages(c("arules", "igraph", "combinat", "arulesViz", "visNetwork"))
+library(arules); library(igraph); library(combinat)
+nouns = sapply(wc, unique)
+nouns1 = sapply(nouns, function(x) {
+  Filter(function(y='') { nchar(y) <= 4 && nchar(y) > 1 && is.hangul(y) }, x)
+})
+
+wtrans = as(nouns1, "transactions")
+rules = apriori(wtrans, parameter = list(supp=0.015, conf=0.5))
+inspect(sort(rules))
+
+
+install.packages(c("arulesViz", "visNetwork"))
+
+subrules2 = head(sort(rules, by="lift"), 20)
+ig <- plot( subrules2, method="graph", control=list(type="items") )
+
+subrules2 <- head(sort(rules, by="confidence"), 30)
+ig <- plot( subrules2, method="graph", control=list(type="items") )
+
+
+ig_df <- get.data.frame( ig, what = "both" )
+visNetwork(
+  nodes = data.frame(id = ig_df$vertices$name,
+                     value = ig_df$vertices$support, ig_df$vertices),
+  edges = ig_df$edges
+) %>% visEdges(ig_df$edges) %>%visOptions( highlightNearest = T )
+
+# Scrap the Naver News ####
+install.packages(c('rvest', 'httr', 'stringr'))
+
+newsUrl = "https://news.naver.com/main/home.nhn"
+
+html = read_html(newsUrl)
+links = html_attr(html_nodes(html, '.main_component.droppable div a'), 'href')
+
+
+links = links[!is.na(links)]       # NA 제거
+links = links[grepl("https://news.naver.com/main/read", links)]
+
+
+#links_reg <- regexpr("https://news.naver.com/main/read", links, perl=TRUE)
+#links_reg[regmatches(links, links_reg)]
+news = list()       # 변수 초기화
+View(links)
+
+for (i in 1:length(links)) {
+  try({
+    htxt = read_html(links[i])
+    
+    comments = html_nodes(htxt, '#articleBodyContents')
+    # repair_encoding(html_text(comments), from='utf-8')
+    get_news = repair_encoding(html_text(comments))
+    news[i] = str_trim(get_news)
+  }, silent = F)
+}
+
+View(news)
+
+news = gsub("[[:cntrl:]]", "", news)                      # 제어문자(\n, \t등) 제거
+news = gsub("http[s]?://[[:alnum:].\\/]+", "", news)     # link 제거
+news = gsub("&[[:alnum:]]+;", "", news)            # escape(&amp; &lt;등) 제거
+news = gsub("@[[:alnum:]]+[:]?", "", news)             # 트위터 계정 부분 제거
+news = gsub("[ㄱ-ㅎㅏ-ㅣ]","",news)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+
+news = gsub("[∼]", "", news)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+news = gsub("\\W", " ", news)
+
+news = gsub("<.*>", "", enc2native(news))          # EMO(/U00000f등) 제거 (windows)
+#news = gsub('\\p{So}|\\p{Cn}', '', news, perl = TRUE)    # EMO(/U00000f등) 제거 (mac)
+news = gsub("[[:punct:]]", " ", news)   
+news = gsub("\\s{2,}", " ", news)                  # 2개이상 공백을 한개의 공백으로 처리
+news =gsub('[[:graph:]]+@[[:alnum:].]+', '', news)
+news =gsub('[[:alnum:]]+@[[:alnum:].]+', '', news)
+news = gsub("http[s]?://[[:alnum:].\\/\\-]+", "", news) 
+news = gsub("flash 오류를 우회하기 위한 함수 추가function flash removeCallback", "", news)
+view(news)
+
+nouns = sapply(news, extractNoun, USE.NAMES = F)
+n1 = table(unlist(nouns))
+
+wc2 = head(sort(n1, decreasing = T), 500)
+pal = brewer.pal(9, "Set1")
+wordcloud(names(wc2), freq=wc2, scale=c(5,0.5), rot.per=0.025, 
+            min.freq = 1, random.order = F, random.color = T, colors = pal)
+
+r_nouns = sapply(nouns, unique)
+r_nouns1 = sapply(r_nouns, function(x){
+  Filter(function(y='') { nchar(y) <= 4 && nchar(y) > 1 && is.hangul(y)}, x)
+})
+
+wrtrans = as(r_nouns1, "transactions")
+
+rules = apriori(wrtrans, parameter = list(supp=0.1, conf=0.7))
+
+View(rules)
+
+arules::inspect(sort(rules))
+rsubrules2 <- head(sort(rules, by="confidence"), 300)
+ig <- plot( rsubrules2, method="graph", control=list(type="items") )
+
+ig_df <- get.data.frame( ig, what = "both" )
+visNetwork(
+  nodes = data.frame(id = ig_df$vertices$name,
+                     value = ig_df$vertices$support, ig_df$vertices),
+  edges = ig_df$edges
+) %>% visEdges(ig_df$edges) %>%visOptions( highlightNearest = T )
+
+                     
+                     

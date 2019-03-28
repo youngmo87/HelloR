@@ -1,0 +1,189 @@
+---
+title: "20190409exam"
+author: "Kim"
+date: "2019년 3월 28일"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+###  1. 트위터 워드클라우드  
+
+
+```{r pf1, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+library(KoNLP)
+library(twitteR) 
+library(RCurl) 
+library(RJSONIO) 
+library(stringr)
+library(streamR)
+library(ROAuth)
+library(RColorBrewer)
+library(wordcloud)
+
+load('data/api_info.rda')
+
+setup_twitter_oauth(api_info[1], api_info[2], api_info[3], api_info[4])
+
+tweets = searchTwitter(enc2utf8('딥러닝'), n=300, lan = 'ko', since = '2019-03-11', until = '2019-03-31')
+tdf = twListToDF(tweets)
+
+
+#tdf = tdf %>% filter(!isRetweet) %>% filter(favoriteCount > 2)
+#tdf = tdf %>% filter(regexpr('광고',text) == -1)    # 특정 단어 포함된 문서 제거
+tw = unique(tdf$text)   
+
+tw = gsub("[[:cntrl:]]", "", tw)                     
+tw = gsub("http[s]?://[[:alnum:].\\/]+", "", tw)   
+tw = gsub("&[[:alnum:]]+;", "", tw)            
+tw = gsub("@[[:alnum:]]+[:]?", "", tw)         
+tw = gsub("[ㄱ-ㅎㅏ-ㅣ]","",tw)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+tw = gsub("<.*>", "", enc2native(tw))          # emoji(/U00000f등) 제거 (windows)
+tw = gsub("[[:punct:]]", " ", tw)     
+tw = gsub("\\s{2,}", " ", tw)                  # 2개이상 공백을 한개의 공백으로 처리
+
+# 1. 명사 추출
+wc = sapply(tw, extractNoun, USE.NAMES = F)
+wc1 = table(unlist(wc))
+#names(wc1)
+#length(wc1)
+
+wc2 = head(sort(wc1, decreasing = T), 100)
+
+
+pal = brewer.pal(9, "Set1")
+wordcloud(names(wc2), freq=wc2, scale=c(5,0.5), rot.per=0.015, 
+          min.freq = 1, random.order = F, random.color = T, colors = pal)
+
+
+```
+
+### 2. NAVER 기사 수집.
+##### 2.1. 시각화를 위한 전처리
+
+```{r navernews, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+#install.packages(c('rvest', 'httr', 'stringr'))
+library(arules); library(igraph); library(combinat)
+library(rvest)
+library(httr)
+library(stringr)
+library(dplyr)
+
+newsUrl = "https://news.naver.com/main/home.nhn"
+
+html = read_html(newsUrl)
+links = html_attr(html_nodes(html, '.main_component.droppable div a'), 'href')
+
+
+links = links[!is.na(links)]       # NA 제거
+links = links[grepl("https://news.naver.com/main/read", links)]
+
+news = list()       # 변수 초기화
+
+for (i in 1:length(links)) {
+  try({
+    htxt = read_html(links[i])
+    
+    comments = html_nodes(htxt, '#articleBodyContents')
+    # repair_encoding(html_text(comments), from='utf-8')
+    get_news = repair_encoding(html_text(comments))
+    news[i] = str_trim(get_news)
+  }, silent = F)
+}
+
+news = gsub("[[:cntrl:]]", "", news)                      # 제어문자(\n, \t등) 제거
+news = gsub("http[s]?://[[:alnum:].\\/]+", "", news)     # link 제거
+news = gsub("&[[:alnum:]]+;", "", news)            # escape(&amp; &lt;등) 제거
+news = gsub("@[[:alnum:]]+[:]?", "", news)             # 트위터 계정 부분 제거
+news = gsub("[ㄱ-ㅎㅏ-ㅣ]","",news)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+
+news = gsub("[∼]", "", news)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+news = gsub("\\W", " ", news)
+
+news = gsub("<.*>", "", enc2native(news))          # EMO(/U00000f등) 제거 (windows)
+news = gsub("[[:punct:]]", " ", news)   
+news = gsub("\\s{2,}", " ", news)                  # 2개이상 공백을 한개의 공백으로 처리
+news =gsub('[[:graph:]]+@[[:alnum:].]+', '', news)
+news =gsub('[[:alnum:]]+@[[:alnum:].]+', '', news)
+news = gsub("http[s]?://[[:alnum:].\\/\\-]+", "", news) 
+news = gsub("flash 오류를 우회하기 위한 함수 추가function flash removeCallback", "", news)
+
+nouns = sapply(news, extractNoun, USE.NAMES = F)
+n1 = table(unlist(nouns))
+
+wc2 = head(sort(n1, decreasing = T), 200)
+```
+##### 2.2. Wordcloud
+
+```{r naverwordcloud, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+pal = brewer.pal(9, "Set1")
+wordcloud(names(wc2), freq=wc2, scale=c(5,0.5), rot.per=0.025, 
+            min.freq = 1, random.order = F, random.color = T, colors = pal)
+
+```
+##### 2.3. 연관성 분석
+```{r naverrel, echo=TRUE, message=FALSE, results='hide', warning=FALSE}
+
+library(arulesViz); library(visNetwork)
+newsUrl = "https://news.naver.com/main/home.nhn"
+
+html = read_html(newsUrl)
+links = html_attr(html_nodes(html, '.main_component.droppable div a'), 'href')
+
+
+links = links[!is.na(links)]       # NA 제거
+links = links[grepl("https://news.naver.com/main/read", links)]
+
+
+news = list()       # 변수 초기화
+
+for (i in 1:length(links)) {
+  try({
+    htxt = read_html(links[i])
+    
+    comments = html_nodes(htxt, '#articleBodyContents')
+    # repair_encoding(html_text(comments), from='utf-8')
+    get_news = repair_encoding(html_text(comments))
+    news[i] = str_trim(get_news)
+  }, silent = F)
+}
+
+View(news)
+
+news = gsub("[[:cntrl:]]", "", news)                      # 제어문자(\n, \t등) 제거
+news = gsub("http[s]?://[[:alnum:].\\/]+", "", news)     # link 제거
+news = gsub("&[[:alnum:]]+;", "", news)            # escape(&amp; &lt;등) 제거
+news = gsub("@[[:alnum:]]+[:]?", "", news)             # 트위터 계정 부분 제거
+news = gsub("[ㄱ-ㅎㅏ-ㅣ]","",news)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+
+news = gsub("[∼]", "", news)                   # 한글 불용어(ㅋㅋㅎㅎ ㅠㅜ등) 제거
+news = gsub("\\W", " ", news)
+
+news = gsub("<.*>", "", enc2native(news))          # EMO(/U00000f등) 제거 (windows)
+news = gsub("[[:punct:]]", " ", news)   
+news = gsub("\\s{2,}", " ", news)                  # 2개이상 공백을 한개의 공백으로 처리
+news =gsub('[[:graph:]]+@[[:alnum:].]+', '', news)
+news =gsub('[[:alnum:]]+@[[:alnum:].]+', '', news)
+news = gsub("http[s]?://[[:alnum:].\\/\\-]+", "", news) 
+news = gsub("flash 오류를 우회하기 위한 함수 추가function flash removeCallback", "", news)
+
+nouns = sapply(news, extractNoun, USE.NAMES = F)
+n1 = table(unlist(nouns))
+
+r_nouns = sapply(nouns, unique)
+r_nouns1 = sapply(r_nouns, function(x){
+  Filter(function(y='') { nchar(y) <= 4 && nchar(y) > 1 && is.hangul(y)}, x)
+})
+
+wrtrans = as(r_nouns1, "transactions")
+
+rules = apriori(wrtrans, parameter = list(supp=0.1, conf=0.7))
+
+arules::inspect(sort(rules))
+rsubrules2 <- head(sort(rules, by="confidence"), 100)
+ig <- plot( rsubrules2, method="graph", control=list(type="items") )
+
+
+```
+

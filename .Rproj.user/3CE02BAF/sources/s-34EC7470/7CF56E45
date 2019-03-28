@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1552870547978.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "7CF56E45",
+    "lastKnownWriteTime" : 1553707182,
+    "last_content_update" : 1553707182416,
+    "path" : "C:/workspace/r/hellor/data/libraryinit.R",
+    "project_path" : "data/libraryinit.R",
+    "properties" : {
+        "cursorPosition" : "10,17",
+        "scrollLine" : "0",
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

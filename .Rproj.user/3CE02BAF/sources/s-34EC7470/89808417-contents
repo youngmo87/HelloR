@@ -1,0 +1,67 @@
+save(kdata, file = 'data/kdata.rda')
+
+#install ref: stringi, devtools
+install.packages('stringi')
+install.packages('devtools')
+devtools::install_github("cardiomoon/kormaps2014")
+
+
+#kdata = kormaps2014::changeCode(korpop1)   # windows only
+
+rm(kdata)
+
+kdata = korpop1                            # mac
+head(kdata)
+colnames(kdata)
+kdata = kdata %>% rename(pop = 총인구_명)
+kdata = kdata %>% rename(area = 행정구역별_읍면동)
+
+#kdata$area = stringi::stri_enc_toutf8(kdata$area) 
+
+ggChoropleth(data=kdata, 
+             aes(fill = pop, 
+                 map_id = code, 
+                 tooltip = area),
+             map = kormap1,
+             interactive = T)
+
+View(kormap1)
+ggplot(kdata, aes(data = pop, map_id = code)) +
+  geom_map( aes(fill = pop), map = kormap1) + 
+  expand_limits(x = kormap1$long, y = kormap1$lat) +
+  scale_fill_gradient2('인구', low='darkblue') +
+  xlab('경도') + ylab('위도') + 
+  labs(title="시도별 인구")
+
+# Interactive Graph ####
+install.packages('plotly')
+
+data
+data = data %>% rename(eng = 영어)
+data = data %>% rename(kor = 국어)
+mpg
+
+
+t = ggplot(data, aes(eng, kor)) +
+  geom_point(aes(color=eng, size=kor), alpha=0.3)
+
+ggplotly(t)
+
+install.packages('dygraphs')
+
+economics
+head(economics)
+
+ue = xts(economics$unemploy, order.by = economics$date)
+dygraph(ue)
+
+View(economics)
+
+dygraph(ue) %>% dyRangeSelector()
+psave = xts(economics$psavert, order.by = economics$date)
+dygraph(cbind(ue, psave))
+ue2 = xts(economics$unemploy / 1000, order.by = economics$date)
+pu = cbind(ue2, psave)
+pu
+dygraph(pu)
+
