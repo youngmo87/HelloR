@@ -29,6 +29,6 @@ library(visNetwork)
 library(arules); library(igraph); library(combinat)
 library(arulesViz)
 library(visNetwork)
-
+library(psych)
 
 #load("data/kdata.rda")
